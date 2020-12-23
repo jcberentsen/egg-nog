@@ -27,11 +27,15 @@ mod gas_tests {
     use egg::{AstSize, Extractor, Rewrite, Runner, SymbolLang};
     #[test]
     fn unit() {
-        assert_eq!("a", "a");
+        simplifies_to(&cas_rules(), "(* 1 a)", "a");
     }
 
-    fn simplifies_to(start : &str, expect : &str){
-        let rules: &[Rewrite<SymbolLang, ()>] = &cas_rules();
+    #[test]
+    fn test_egg_tutorial() {
+        simplifies_to(&cas_rules(), "(+ 0 (* 1 a))", "a");
+    }
+
+    fn simplifies_to(rules: &[Rewrite<SymbolLang, ()>], start : &str, expect : &str){
 
         // While it may look like we are working with numbers,
         // SymbolLang stores everything as strings.
@@ -55,8 +59,4 @@ mod gas_tests {
         assert_eq!(best_cost, 1);
     }
 
-    #[test]
-    fn test_egg_tutorial() {
-        simplifies_to("(+ 0 (* 1 a))", "a");
-    }
 }
