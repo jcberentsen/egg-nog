@@ -1,25 +1,19 @@
-use egg::{
-    rewrite as rw
-};
+use egg::rewrite as rw;
 
 fn main() {
     //! From egg tutorial code https://docs.rs/egg/0.6.0/egg/tutorials/_02_getting_started/index.html
     println!("Run cargo test instead");
 }
 
-pub fn cas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 5] {
-    [
-        rw!("commute-add"; "(+ ?x ?y)" => "(+ ?y ?x)"),
-        rw!("commute-mul"; "(* ?x ?y)" => "(* ?y ?x)"),
-        rw!("add-0"; "(+ ?x 0)" => "?x"),
-        rw!("mul-0"; "(* ?x 0)" => "0"),
-        rw!("mul-1"; "(* ?x 1)" => "?x"),
-    ]
-}
+const cas_rules: [egg::Rewrite<egg::SymbolLang, ()>; 5] = [
+    rw!("commute-add"; "(+ ?x ?y)" => "(+ ?y ?x)"),
+    rw!("commute-mul"; "(* ?x ?y)" => "(* ?y ?x)"),
+    rw!("add-0"; "(+ ?x 0)" => "?x"),
+    rw!("mul-0"; "(* ?x 0)" => "0"),
+    rw!("mul-1"; "(* ?x 1)" => "?x"),
+];
 
-pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 1] {
-    [rw!("mul-1"; "(* ?x 1)" => "?x")]
-}
+const gas_rules: [egg::Rewrite<egg::SymbolLang, ()>; 1] = [rw!("mul-1"; "(* ?x 1)" => "?x")];
 
 #[cfg(test)]
 mod gas_tests {
@@ -27,11 +21,16 @@ mod gas_tests {
     use egg::{AstSize, Extractor, Rewrite, Runner, SymbolLang};
     #[test]
     fn unit() {
-        assert_eq!("a", "a");
+        simplifies_to(&cas_rules, "(* 1 a)", "a");
     }
 
-    fn simplifies_to(start : &str, expect : &str){
-        let rules: &[Rewrite<SymbolLang, ()>] = &cas_rules();
+    #[test]
+    fn test_egg_tutorial() {
+        simplifies_to(&cas_rules, "(+ 0 (* 1 a))", "a");
+    }
+
+    fn simplifies_to(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
+        // let rules: &[Rewrite<SymbolLang, ()>] = &cas_rules();
 
         // While it may look like we are working with numbers,
         // SymbolLang stores everything as strings.
@@ -53,10 +52,5 @@ mod gas_tests {
         // we found the best thing, which is just "a" in this case
         assert_eq!(best_expr, expect.parse().unwrap());
         assert_eq!(best_cost, 1);
-    }
-
-    #[test]
-    fn test_egg_tutorial() {
-        simplifies_to("(+ 0 (* 1 a))", "a");
     }
 }
