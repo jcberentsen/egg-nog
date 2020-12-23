@@ -1,55 +1,62 @@
-use egg::*;
+use egg::{
+    rewrite as rw
+};
 
 fn main() {
     //! From egg tutorial code https://docs.rs/egg/0.6.0/egg/tutorials/_02_getting_started/index.html
-    println!("Hello, egg-world!");
+    println!("Run cargo test instead");
+}
 
-    // Since parsing can return an error, `unwrap` just panics if the result doesn't return Ok
-    let my_expression: RecExpr<SymbolLang> = "(foo a b c)".parse().unwrap();
-    println!("This is my expression {}", my_expression);
+pub fn cas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 5] {
+    [
+        rw!("commute-add"; "(+ ?x ?y)" => "(+ ?y ?x)"),
+        rw!("commute-mul"; "(* ?x ?y)" => "(* ?y ?x)"),
+        rw!("add-0"; "(+ ?x 0)" => "?x"),
+        rw!("mul-0"; "(* ?x 0)" => "0"),
+        rw!("mul-1"; "(* ?x 1)" => "?x"),
+    ]
+}
 
-    let mut expr = RecExpr::default();
-    let a = expr.add(SymbolLang::leaf("a"));
-    println!("Expression a {}", a);
+pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 1] {
+    [rw!("mul-1"; "(* ?x 1)" => "?x")]
+}
 
-    let b = expr.add(SymbolLang::leaf("b"));
-    println!("Expression b {}", a);
-    let foo = expr.add(SymbolLang::new("foo", vec![a, b]));
-    println!("Expression foo {}", foo);
+#[cfg(test)]
+mod gas_tests {
+    use super::*;
+    use egg::{AstSize, Extractor, Rewrite, Runner, SymbolLang};
+    #[test]
+    fn unit() {
+        assert_eq!("a", "a");
+    }
 
-    // we can do the same thing with an EGraph
-    let mut egraph: EGraph<SymbolLang, ()> = Default::default();
-    let a = egraph.add(SymbolLang::leaf("a"));
-    let b = egraph.add(SymbolLang::leaf("b"));
-    let foo = egraph.add(SymbolLang::new("foo", vec![a, b]));
-    println!("EGraph foo {}", foo);
+    fn simplifies_to(start : &str, expect : &str){
+        let rules: &[Rewrite<SymbolLang, ()>] = &cas_rules();
 
-    // we can also add RecExprs to an egraph
-    let foo2 = egraph.add_expr(&expr);
-    // note that if you add the same thing to an e-graph twice, you'll get back equivalent Ids
-    assert_eq!(foo, foo2);
+        // While it may look like we are working with numbers,
+        // SymbolLang stores everything as strings.
+        // We can make our own Language later to work with other types.
+        let start = start.parse().unwrap();
 
-    // let's make an e-graph
-    let mut egraph: EGraph<SymbolLang, ()> = Default::default();
-    let a = egraph.add(SymbolLang::leaf("a"));
-    let b = egraph.add(SymbolLang::leaf("b"));
-    let foo = egraph.add(SymbolLang::new("foo", vec![a, b]));
-    println!("EGraph foo {}", foo);
+        // That's it! We can run equality saturation now.
+        let runner = Runner::default().with_expr(&start).run(rules);
 
-    // we can make Patterns by parsing, similar to RecExprs
-    // names preceded by ? are parsed as Pattern variables and will match anything
-    let pat: Pattern<SymbolLang> = "(foo ?x ?x)".parse().unwrap();
+        // Extractors can take a user-defined cost function,
+        // we'll use the egg-provided AstSize for now
+        let mut extractor = Extractor::new(&runner.egraph, AstSize);
 
-    // since we use ?x twice, it must match the same thing,
-    // so this search will return nothing
-    let matches = pat.search(&egraph);
-    assert!(matches.is_empty());
+        // We want to extract the best expression represented in the
+        // same e-class as our initial expression, not from the whole e-graph.
+        // Luckily the runner stores the eclass Id where we put the initial expression.
+        let (best_cost, best_expr) = extractor.find_best(runner.roots[0]);
 
-    egraph.union(a, b);
-    // recall that rebuild must be called to "see" the effects of unions
-    egraph.rebuild();
+        // we found the best thing, which is just "a" in this case
+        assert_eq!(best_expr, expect.parse().unwrap());
+        assert_eq!(best_cost, 1);
+    }
 
-    // now we can find a match since a = b
-    let matches = pat.search(&egraph);
-    assert!(!matches.is_empty())
+    #[test]
+    fn test_egg_tutorial() {
+        simplifies_to("(+ 0 (* 1 a))", "a");
+    }
 }
