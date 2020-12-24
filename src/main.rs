@@ -29,6 +29,11 @@ pub fn gas_rules() -> Vec<egg::Rewrite<egg::SymbolLang, ()>> {vec![
     rw!("vector_inverse"; "(inv v)" => "(* (invmag2 v) v)"),
 ]}
 
+egg::test_fn! {
+    unit_g4a, gas_rules(),
+    "(* a 1)" =>  "a"
+}
+
 #[cfg(test)]
 mod gas_tests {
     use super::*;
