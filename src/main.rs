@@ -5,30 +5,29 @@ fn main() {
     println!("Run cargo test instead");
 }
 
-pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 13] {
-    [
-        // G1
-        rw!("distr-l"; "(* ?A (+ ?B ?C) )" => "(+ (* ?A ?B) (* ?A ?C))"),
-        rw!("distr-r"; "(* (+ ?B ?C) ?A )" => "(+ (* ?B ?A) (* ?C ?A))"),
-        // G2
-        rw!("distr-g1-scalar1"; "(* (* a A) B )" => "(* A (* a B))"),
-        rw!("distr-g1-scalar2"; "(* A (* a B) )" => "(* a (* A B))"),
-        // G3
-        rw!("assoc-1"; "(* A (* B C))" => "(* (* A B) C)"),
-        rw!("assoc-2"; "(* (* A B) C)" => "(* A (* B C))"),
-        // G4
-        rw!("mul-1r"; "(* ?x 1)" => "?x"),
-        rw!("mul-1l"; "(* 1 ?x)" => "?x"),
-        // G5
-        rw!("vector_metric-1"; "(* u u)" => "(dot u u)"),
-        rw!("vector_metric-2"; "(dot u u)" => "(sqr (magnitude u))"),
-        rw!("vector_metric-3"; "(sqr (magnitude u))" => "(mag2 u)"),
-        // Vector fundamental
-        rw!("vector_product"; "(* u v)" => "(+ (dot u v) (hat u v))"),
-        // Vector inverse
-        rw!("vector_inverse"; "(inv v)" => "(* (invmag2 v) v)"),
-    ]
-}
+#[rustfmt::skip]
+pub fn gas_rules() -> Vec<egg::Rewrite<egg::SymbolLang, ()>> {vec![
+    // G1
+    rw!("distr-l"; "(* ?A (+ ?B ?C) )" => "(+ (* ?A ?B) (* ?A ?C))"),
+    rw!("distr-r"; "(* (+ ?B ?C) ?A )" => "(+ (* ?B ?A) (* ?C ?A))"),
+    // G2
+    rw!("distr-g1-scalar1"; "(* (* a A) B )" => "(* A (* a B))"),
+    rw!("distr-g1-scalar2"; "(* A (* a B) )" => "(* a (* A B))"),
+    // G3
+    rw!("assoc-1"; "(* A (* B C))" => "(* (* A B) C)"),
+    rw!("assoc-2"; "(* (* A B) C)" => "(* A (* B C))"),
+    // G4
+    rw!("mul-1r"; "(* ?x 1)" => "?x"),
+    rw!("mul-1l"; "(* 1 ?x)" => "?x"),
+    // G5
+    rw!("vector_metric-1"; "(* u u)" => "(dot u u)"),
+    rw!("vector_metric-2"; "(dot u u)" => "(sqr (magnitude u))"),
+    rw!("vector_metric-3"; "(sqr (magnitude u))" => "(mag2 u)"),
+    // Vector fundamental
+    rw!("vector_product"; "(* u v)" => "(+ (dot u v) (hat u v))"),
+    // Vector inverse
+    rw!("vector_inverse"; "(inv v)" => "(* (invmag2 v) v)"),
+]}
 
 #[cfg(test)]
 mod gas_tests {
@@ -63,7 +62,7 @@ mod gas_tests {
     fn vector_metric() {
         are_equivalent(&gas_rules(), "(* u u)", "(dot u u)");
         are_equivalent(&gas_rules(), "(dot u u)", "(sqr (magnitude u))");
-        are_equivalent(&gas_rules(), "(dot u u)", "(mag2 u)");
+        simplifies_to(&gas_rules(), "(dot u u)", "(mag2 u)");
     }
 
     #[test]
@@ -74,6 +73,13 @@ mod gas_tests {
     #[test]
     fn vector_inverse() {
         are_equivalent(&gas_rules(), "(inv v)", "(* (invmag2 v) v)");
+        // Challenge
+        // are_equivalent(&gas_rules(), "(* v (inv (dot v v)))", "(inv v))");
+    }
+
+    #[test]
+    fn list() {
+        simplifies_to(&gas_rules(), "list a b c", "list a b");
         // Challenge
         // are_equivalent(&gas_rules(), "(* v (inv (dot v v)))", "(inv v))");
     }
