@@ -5,7 +5,7 @@ fn main() {
     println!("Run cargo test instead");
 }
 
-pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 10] {
+pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 13] {
     [
         // G1
         rw!("distr-l"; "(* ?A (+ ?B ?C) )" => "(+ (* ?A ?B) (* ?A ?C))"),
@@ -22,6 +22,11 @@ pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 10] {
         // G5
         rw!("vector_metric-1"; "(* u u)" => "(dot u u)"),
         rw!("vector_metric-2"; "(dot u u)" => "(sqr (magnitude u))"),
+        rw!("vector_metric-3"; "(sqr (magnitude u))" => "(mag2 u)"),
+        // Vector fundamental
+        rw!("vector_product"; "(* u v)" => "(+ (dot u v) (hat u v))"),
+        // Vector inverse
+        rw!("vector_inverse"; "(inv v)" => "(* (invmag2 v) v)"),
     ]
 }
 
@@ -58,57 +63,68 @@ mod gas_tests {
     fn vector_metric() {
         are_equivalent(&gas_rules(), "(* u u)", "(dot u u)");
         are_equivalent(&gas_rules(), "(dot u u)", "(sqr (magnitude u))");
+        are_equivalent(&gas_rules(), "(dot u u)", "(mag2 u)");
+    }
+
+    #[test]
+    fn vector_product_fundamental() {
+        are_equivalent(&gas_rules(), "(* u v)", "(+ (dot u v) (hat u v))");
+    }
+
+    #[test]
+    fn vector_inverse() {
+        are_equivalent(&gas_rules(), "(inv v)", "(* (invmag2 v) v)");
+        // Challenge
+        // are_equivalent(&gas_rules(), "(* v (inv (dot v v)))", "(inv v))");
     }
 
     fn simplifies_to(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
-        // While it may look like we are working with numbers,
-        // SymbolLang stores everything as strings.
-        // We can make our own Language later to work with other types.
         let start = start.parse().unwrap();
-
-        // That's it! We can run equality saturation now.
         let runner = Runner::default().with_expr(&start).run(rules);
-
-        // Extractors can take a user-defined cost function,
-        // we'll use the egg-provided AstSize for now
         let mut extractor = Extractor::new(&runner.egraph, AstSize);
+        let (_best_cost, best_expr) = extractor.find_best(runner.roots[0]);
 
-        // We want to extract the best expression represented in the
-        // same e-class as our initial expression, not from the whole e-graph.
-        // Luckily the runner stores the eclass Id where we put the initial expression.
-        let (best_cost, best_expr) = extractor.find_best(runner.roots[0]);
-
-        // we found the best thing, which is just "a" in this case
         assert_eq!(best_expr, expect.parse().unwrap());
-        assert_eq!(best_cost, 1);
     }
 
     fn are_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
-        // While it may look like we are working with numbers,
-        // SymbolLang stores everything as strings.
-        // We can make our own Language later to work with other types.
         let start = start.parse().unwrap();
         let expect = expect.parse().unwrap();
 
-        // That's it! We can run equality saturation now.
-        let runner = Runner::default().with_expr(&start).run(rules);
-        let eqs = runner.egraph.equivs(&start, &expect);
-        assert_eq!(eqs.len(), 1);
+        let runner = Runner::default()
+            .with_expr(&start)
+            .with_expr(&expect)
+            .run(rules);
+        assert_eq!(
+            runner.egraph.find(runner.roots[0]),
+            runner.egraph.find(runner.roots[1]),
+            "Not able to infer equivalence between {} to {}",
+            start,
+            expect
+        );
     }
 
     fn are_symmetric_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
-        // While it may look like we are working with numbers,
-        // SymbolLang stores everything as strings.
-        // We can make our own Language later to work with other types.
         let start = start.parse().unwrap();
         let expect = expect.parse().unwrap();
 
-        // That's it! We can run equality saturation now.
         let runner1 = Runner::default().with_expr(&start).run(rules);
         let runner2 = Runner::default().with_expr(&expect).run(rules);
         let eqs = runner1.egraph.equivs(&start, &expect);
-        assert_eq!(eqs.len(), 1, "Not able to infer equivalence from {} to {}", start, expect);
+        assert_eq!(
+            eqs.len(),
+            1,
+            "Not able to infer equivalence from {} to {}",
+            start,
+            expect
+        );
         let eqs = runner2.egraph.equivs(&start, &expect);
-        assert_eq!(eqs.len(), 1, "Not able to infer equivalence from {} to {}", expect, start);
+        assert_eq!(
+            eqs.len(),
+            1,
+            "Not able to infer equivalence from {} to {}",
+            expect,
+            start
+        );
     }
 }
