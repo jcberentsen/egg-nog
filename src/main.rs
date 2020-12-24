@@ -29,74 +29,28 @@ pub fn gas_rules() -> Vec<egg::Rewrite<egg::SymbolLang, ()>> {vec![
     rw!("vector_inverse"; "(inv v)" => "(* (invmag2 v) v)"),
 ]}
 
-egg::test_fn! {
-    unit_g4a, gas_rules(),
-    "(* a 1)" =>  "a"
-}
+egg::test_fn! {right_unit_g4, gas_rules(), "(* a 1)" =>  "a"}
+egg::test_fn! {left_unit_g4, gas_rules(), "(* 1 a)" =>  "a"}
+
+egg::test_fn! { dist1_g1, gas_rules(), "(* A (+ B C))" => "(+ (* A B) (* A C))" }
+egg::test_fn! { dist2_g1, gas_rules(), "(* (+ B C) A)" => "(+ (* B A) (* C A))" }
+egg::test_fn! { dist_g1_scalar1, gas_rules(), "(* (* a A) B)" => "(* A (* a B))" }
+egg::test_fn! { dist_g1_scalar2, gas_rules(),  "(* A (* a B))" => "(* a (* A B))" }
+egg::test_fn! { assoc, gas_rules(), "(* A (* B C))" => "(* (* A B) C)"}
+
+egg::test_fn! { vector_metric1, gas_rules(), "(* u u)" => "(dot u u)" }
+egg::test_fn! { vector_metric2, gas_rules(), "(dot u u)" => "(sqr (magnitude u))"}
+egg::test_fn! { vector_metric3, gas_rules(), "(dot u u)" => "(mag2 u)" }
+
+egg::test_fn! { vector_product_fundamental, gas_rules(), "(* u v)"=> "(+ (dot u v) (hat u v))"}
+egg::test_fn! { vector_inverse, gas_rules(), "(inv v)" => "(* (invmag2 v) v)"}
+egg::test_fn! { challenging, gas_rules(), "(* v (inv (dot v v)))" => "(inv v))" }
 
 #[cfg(test)]
 mod gas_tests {
-    use super::*;
     use egg::{AstSize, Extractor, Rewrite, Runner, SymbolLang};
 
-    #[test]
-    fn unit_g4() {
-        simplifies_to(&gas_rules(), "(* a 1)", "a");
-        simplifies_to(&gas_rules(), "(* 1 a)", "a");
-    }
 
-    #[test]
-    fn distr_g1() {
-        are_equivalent(&gas_rules(), "(* A (+ B C))", "(+ (* A B) (* A C))");
-        are_equivalent(&gas_rules(), "(* (+ B C) A)", "(+ (* B A) (* C A))");
-    }
-
-    #[test]
-    fn distr_g2_scalar() {
-        are_equivalent(&gas_rules(), "(* (* a A) B)", "(* A (* a B))");
-
-        are_equivalent(&gas_rules(), "(* A (* a B))", "(* a (* A B))");
-    }
-
-    #[test]
-    fn assoc() {
-        are_symmetric_equivalent(&gas_rules(), "(* A (* B C))", "(* (* A B) C)");
-    }
-
-    #[test]
-    fn vector_metric() {
-        are_equivalent(&gas_rules(), "(* u u)", "(dot u u)");
-        are_equivalent(&gas_rules(), "(dot u u)", "(sqr (magnitude u))");
-        simplifies_to(&gas_rules(), "(dot u u)", "(mag2 u)");
-    }
-
-    #[test]
-    fn vector_product_fundamental() {
-        are_equivalent(&gas_rules(), "(* u v)", "(+ (dot u v) (hat u v))");
-    }
-
-    #[test]
-    fn vector_inverse() {
-        are_equivalent(&gas_rules(), "(inv v)", "(* (invmag2 v) v)");
-        // Challenge
-        // are_equivalent(&gas_rules(), "(* v (inv (dot v v)))", "(inv v))");
-    }
-
-    #[test]
-    fn list() {
-        simplifies_to(&gas_rules(), "list a b c", "list a b");
-        // Challenge
-        // are_equivalent(&gas_rules(), "(* v (inv (dot v v)))", "(inv v))");
-    }
-
-    fn simplifies_to(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
-        let start = start.parse().unwrap();
-        let runner = Runner::default().with_expr(&start).run(rules);
-        let mut extractor = Extractor::new(&runner.egraph, AstSize);
-        let (_best_cost, best_expr) = extractor.find_best(runner.roots[0]);
-
-        assert_eq!(best_expr, expect.parse().unwrap());
-    }
 
     fn are_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
         let start = start.parse().unwrap();
