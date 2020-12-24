@@ -44,52 +44,5 @@ egg::test_fn! { vector_metric3, gas_rules(), "(dot u u)" => "(mag2 u)" }
 
 egg::test_fn! { vector_product_fundamental, gas_rules(), "(* u v)"=> "(+ (dot u v) (hat u v))"}
 egg::test_fn! { vector_inverse, gas_rules(), "(inv v)" => "(* (invmag2 v) v)"}
-egg::test_fn! { challenging, gas_rules(), "(* v (inv (dot v v)))" => "(inv v))" }
 
-#[cfg(test)]
-mod gas_tests {
-    use egg::{AstSize, Extractor, Rewrite, Runner, SymbolLang};
-
-
-
-    fn are_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
-        let start = start.parse().unwrap();
-        let expect = expect.parse().unwrap();
-
-        let runner = Runner::default()
-            .with_expr(&start)
-            .with_expr(&expect)
-            .run(rules);
-        assert_eq!(
-            runner.egraph.find(runner.roots[0]),
-            runner.egraph.find(runner.roots[1]),
-            "Not able to infer equivalence between {} to {}",
-            start,
-            expect
-        );
-    }
-
-    fn are_symmetric_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
-        let start = start.parse().unwrap();
-        let expect = expect.parse().unwrap();
-
-        let runner1 = Runner::default().with_expr(&start).run(rules);
-        let runner2 = Runner::default().with_expr(&expect).run(rules);
-        let eqs = runner1.egraph.equivs(&start, &expect);
-        assert_eq!(
-            eqs.len(),
-            1,
-            "Not able to infer equivalence from {} to {}",
-            start,
-            expect
-        );
-        let eqs = runner2.egraph.equivs(&start, &expect);
-        assert_eq!(
-            eqs.len(),
-            1,
-            "Not able to infer equivalence from {} to {}",
-            expect,
-            start
-        );
-    }
-}
+// TODO egg::test_fn! { challenging, gas_rules(), "(* v (inv (dot v v)))" => "(inv v))" }
