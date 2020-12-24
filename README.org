@@ -1,0 +1,20 @@
+#+TITLE: Readme egg-nog
+
+* Inspiration
+Egg tutorial code https://docs.rs/egg/0.6.0/egg/tutorials/_02_getting_started/index.html
+* Geometric Algebra
+** Core
+Algebra G^n is extension of the inner product space R^n
+Identity: 1
+
+Noncommutative
+Scalars: a, b, c TODO latex
+Multivectors: A,B,C
+Vectors: u, v, w
+** Implementing a Geometric Algebra System (GAS) using egg
+*** See how far we can go with SymbolLang
+**** We may want to separate scalars, vectors, multivectors
+**** We may want some Analysis (even, odd?)
+
+** References
+http://www.faculty.luther.edu/~macdonal/GA&GC.pdf

@@ -1,42 +1,66 @@
-use egg::{
-    rewrite as rw
-};
+use egg::rewrite as rw;
 
 fn main() {
-    //! From egg tutorial code https://docs.rs/egg/0.6.0/egg/tutorials/_02_getting_started/index.html
+    //! Based on egg tutorial code https://docs.rs/egg/0.6.0/egg/tutorials/_02_getting_started/index.html
     println!("Run cargo test instead");
 }
 
-pub fn cas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 5] {
+pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 10] {
     [
-        rw!("commute-add"; "(+ ?x ?y)" => "(+ ?y ?x)"),
-        rw!("commute-mul"; "(* ?x ?y)" => "(* ?y ?x)"),
-        rw!("add-0"; "(+ ?x 0)" => "?x"),
-        rw!("mul-0"; "(* ?x 0)" => "0"),
-        rw!("mul-1"; "(* ?x 1)" => "?x"),
+        // G1
+        rw!("distr-l"; "(* ?A (+ ?B ?C) )" => "(+ (* ?A ?B) (* ?A ?C))"),
+        rw!("distr-r"; "(* (+ ?B ?C) ?A )" => "(+ (* ?B ?A) (* ?C ?A))"),
+        // G2
+        rw!("distr-g1-scalar1"; "(* (* a A) B )" => "(* A (* a B))"),
+        rw!("distr-g1-scalar2"; "(* A (* a B) )" => "(* a (* A B))"),
+        // G3
+        rw!("assoc-1"; "(* A (* B C))" => "(* (* A B) C)"),
+        rw!("assoc-2"; "(* (* A B) C)" => "(* A (* B C))"),
+        // G4
+        rw!("mul-1r"; "(* ?x 1)" => "?x"),
+        rw!("mul-1l"; "(* 1 ?x)" => "?x"),
+        // G5
+        rw!("vector_metric-1"; "(* u u)" => "(dot u u)"),
+        rw!("vector_metric-2"; "(dot u u)" => "(sqr (magnitude u))"),
     ]
-}
-
-pub fn gas_rules() -> [egg::Rewrite<egg::SymbolLang, ()>; 1] {
-    [rw!("mul-1"; "(* ?x 1)" => "?x")]
 }
 
 #[cfg(test)]
 mod gas_tests {
     use super::*;
     use egg::{AstSize, Extractor, Rewrite, Runner, SymbolLang};
+
     #[test]
-    fn unit() {
-        simplifies_to(&cas_rules(), "(* 1 a)", "a");
+    fn unit_g4() {
+        simplifies_to(&gas_rules(), "(* a 1)", "a");
+        simplifies_to(&gas_rules(), "(* 1 a)", "a");
     }
 
     #[test]
-    fn test_egg_tutorial() {
-        simplifies_to(&cas_rules(), "(+ 0 (* 1 a))", "a");
+    fn distr_g1() {
+        are_equivalent(&gas_rules(), "(* A (+ B C))", "(+ (* A B) (* A C))");
+        are_equivalent(&gas_rules(), "(* (+ B C) A)", "(+ (* B A) (* C A))");
     }
 
-    fn simplifies_to(rules: &[Rewrite<SymbolLang, ()>], start : &str, expect : &str){
+    #[test]
+    fn distr_g2_scalar() {
+        are_equivalent(&gas_rules(), "(* (* a A) B)", "(* A (* a B))");
 
+        are_equivalent(&gas_rules(), "(* A (* a B))", "(* a (* A B))");
+    }
+
+    #[test]
+    fn assoc() {
+        are_symmetric_equivalent(&gas_rules(), "(* A (* B C))", "(* (* A B) C)");
+    }
+
+    #[test]
+    fn vector_metric() {
+        are_equivalent(&gas_rules(), "(* u u)", "(dot u u)");
+        are_equivalent(&gas_rules(), "(dot u u)", "(sqr (magnitude u))");
+    }
+
+    fn simplifies_to(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
         // While it may look like we are working with numbers,
         // SymbolLang stores everything as strings.
         // We can make our own Language later to work with other types.
@@ -59,4 +83,32 @@ mod gas_tests {
         assert_eq!(best_cost, 1);
     }
 
+    fn are_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
+        // While it may look like we are working with numbers,
+        // SymbolLang stores everything as strings.
+        // We can make our own Language later to work with other types.
+        let start = start.parse().unwrap();
+        let expect = expect.parse().unwrap();
+
+        // That's it! We can run equality saturation now.
+        let runner = Runner::default().with_expr(&start).run(rules);
+        let eqs = runner.egraph.equivs(&start, &expect);
+        assert_eq!(eqs.len(), 1);
+    }
+
+    fn are_symmetric_equivalent(rules: &[Rewrite<SymbolLang, ()>], start: &str, expect: &str) {
+        // While it may look like we are working with numbers,
+        // SymbolLang stores everything as strings.
+        // We can make our own Language later to work with other types.
+        let start = start.parse().unwrap();
+        let expect = expect.parse().unwrap();
+
+        // That's it! We can run equality saturation now.
+        let runner1 = Runner::default().with_expr(&start).run(rules);
+        let runner2 = Runner::default().with_expr(&expect).run(rules);
+        let eqs = runner1.egraph.equivs(&start, &expect);
+        assert_eq!(eqs.len(), 1, "Not able to infer equivalence from {} to {}", start, expect);
+        let eqs = runner2.egraph.equivs(&start, &expect);
+        assert_eq!(eqs.len(), 1, "Not able to infer equivalence from {} to {}", expect, start);
+    }
 }
