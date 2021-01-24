@@ -11,6 +11,8 @@ Noncommutative
 Scalars: a, b, c TODO latex
 Multivectors: A,B,C
 Vectors: u, v, w
+
+Vector inverse: (inv v) =? (* (magnitude v) v)
 ** Implementing a Geometric Algebra System (GAS) using egg
 *** See how far we can go with SymbolLang
 **** We may want to separate scalars, vectors, multivectors
