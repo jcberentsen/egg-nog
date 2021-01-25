@@ -1,0 +1,6 @@
+#+TITLE: Plan
+
+* TODO Move tests to respective modules
+* TODO Implement a Language
+* TODO Add some Analysis
+* TODO Add CostFunction
