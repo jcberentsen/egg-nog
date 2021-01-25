@@ -20,7 +20,8 @@ Vector inverse: (inv v) =? (* (magnitude v) v)
 **** We may want some Analysis (even, odd?)
 
 * References
-** Egg https://arxiv.org/abs/2004.03082
+** egg: Fast and Extensible Equality Saturation
+https://arxiv.org/abs/2004.03082
 ** SPORES reference
 SPORES: Sum-Product Optimization via Relational Equality Saturation for Large Scale Linear Algebra
 https://arxiv.org/abs/2002.07951
