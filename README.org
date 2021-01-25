@@ -26,6 +26,12 @@ https://www.rust-lang.org/tools/install
 #+begin_src bash
 cargo test
 #+end_src
+** Install and run cargo-watch for file-change triggered checks
+#+begin_src bash
+cargo install cargo-watch
+cargo-watch -c -x check -x test # run check, then test
+#+end_src
+
 * References
 ** egg: Fast and Extensible Equality Saturation
 https://arxiv.org/abs/2004.03082
