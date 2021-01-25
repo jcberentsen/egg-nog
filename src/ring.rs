@@ -1,6 +1,6 @@
 use egg::rewrite as rw;
 
-type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
+use crate::language::GaRules;
 
 use crate::abelian::*;
 use crate::group::*;
@@ -11,7 +11,7 @@ use crate::group::*;
  * Combination of Abelian Group(+, 0, neg) and Monoid (*, 1)
 */
 #[rustfmt::skip]
-pub fn ring_rules() -> GasRules {
+pub fn ring_rules() -> GaRules {
     let mut rules = abelian_group_rules();
     rules.extend(group_mul_rules()); // or monoid_mul_rules skips mul inverse?
     let extra = vec![

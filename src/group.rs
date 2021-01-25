@@ -1,5 +1,5 @@
 use egg::rewrite as rw;
-type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
+use crate::language::GaRules;
 
 use crate::monoid:: { monoid_mul_rules, monoid_add_rules };
 
@@ -17,7 +17,7 @@ use crate::monoid:: { monoid_mul_rules, monoid_add_rules };
 /** Monoid(+, 0) => Group(+, 0, neg)
  */
 #[rustfmt::skip]
-pub fn group_add_rules() -> GasRules {
+pub fn group_add_rules() -> GaRules {
     let mut rules = monoid_add_rules();
     rules.extend(vec![
     rw!("group_add_inverse"; "(+ ?a (neg ?a))" => "0" ),
@@ -29,7 +29,7 @@ pub fn group_add_rules() -> GasRules {
 /** Monoid(*, 1) => Group(*, 1, inv)
  */
 #[rustfmt::skip]
-pub fn group_mul_rules() -> GasRules {
+pub fn group_mul_rules() -> GaRules {
     let mut rules = monoid_mul_rules();
     let extra = vec![
     rw!("group_mul_inverse_l"; "(* ?a (inv ?a))" => "1" ),

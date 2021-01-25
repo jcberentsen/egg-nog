@@ -1,5 +1,5 @@
 use egg::rewrite as rw;
-type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
+use crate::language::GaRules;
 
 /**
 * Monoid rules
@@ -11,7 +11,7 @@ type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
 /** Monoid(+, 0)
 */
 #[rustfmt::skip]
-pub fn monoid_add_rules() -> GasRules {vec![
+pub fn monoid_add_rules() -> GaRules {vec![
     rw!("monoid_add_associative_l"; "(+ ?a (+ ?b ?c)))" => "(+ (+ ?a ?b) ?c))"),
     rw!("monoid_add_associative_r"; "(+ (+ ?a ?b) ?c))" => "(+ ?a (+ ?b ?c)))" ),
     rw!("monoid_add_unit_l"; "(+ ?a 0)" => "?a" ),
@@ -21,7 +21,7 @@ pub fn monoid_add_rules() -> GasRules {vec![
 /** Monoid(*, 1)
 */
 #[rustfmt::skip]
-pub fn monoid_mul_rules() -> GasRules {vec![
+pub fn monoid_mul_rules() -> GaRules {vec![
     rw!("monoid_mul_associative_l"; "(* ?a (* ?b ?c)))" => "(* (* ?a ?b) ?c))"),
     rw!("monoid_mul_associative_r"; "(* (* ?a ?b) ?c))" => "(* ?a (* ?b ?c)))" ),
     rw!("monoid_mul_unit_l"; "(* ?a 1)" => "?a" ),

@@ -1,5 +1,5 @@
+use crate::language::GaRules;
 use egg::rewrite as rw;
-type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
 
 use crate::ring:: { ring_rules };
 
@@ -13,7 +13,7 @@ use crate::ring:: { ring_rules };
  * I is the 'end?' e012
 */
 #[rustfmt::skip]
-pub fn gas_rules() -> GasRules {
+pub fn gas_rules() -> GaRules {
     let mut rules = ring_rules();
 
     let extra = vec![

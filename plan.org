@@ -1,6 +1,9 @@
 #+TITLE: Plan
 
-* TODO Move tests to respective modules
+* DONE Move tests to respective modules
 * TODO Implement a Language
+* TODO Fix the inv inv test
 * TODO Add some Analysis
 * TODO Add CostFunction
+* TODO Make lib for real
+Should get rid of unused functions warnings?

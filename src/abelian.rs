@@ -1,5 +1,5 @@
+use crate::language::GaRules;
 use egg::rewrite as rw;
-type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
 
 use crate::group:: { group_add_rules };
 
@@ -9,7 +9,7 @@ use crate::group:: { group_add_rules };
  * Group(+, 0, neg) => AbelianGroup(+, 0, neg)
 */
 #[rustfmt::skip]
-pub fn abelian_group_rules() -> GasRules {
+pub fn abelian_group_rules() -> GaRules {
     let mut rules = group_add_rules();
     let extra = vec![
     rw!("abelian_group_add_commutative"; "(+ ?a ?b))" => "(+ ?b ?a)" ),

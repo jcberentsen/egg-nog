@@ -1,5 +1,5 @@
+use crate::language::GaRules;
 use egg::rewrite as rw;
-type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
 
 use crate::ring:: { ring_rules };
 
@@ -9,7 +9,7 @@ use crate::ring:: { ring_rules };
  * Geometric Algebra is OVER a Vectorspace of a Field
 */
 #[rustfmt::skip]
-pub fn field_rules() -> GasRules {
+pub fn field_rules() -> GaRules {
     let mut rules = ring_rules();
     let extra = vec![
     rw!("field_mul_commutative"; "(* ?a ?b)" => "(* ?b ?a)" ),
