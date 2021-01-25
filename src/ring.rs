@@ -1,4 +1,5 @@
 use egg::rewrite as rw;
+
 type GasRules = Vec<egg::Rewrite<egg::SymbolLang, ()>>;
 
 use crate::abelian::*;
@@ -23,3 +24,12 @@ pub fn ring_rules() -> GasRules {
     rules.extend(extra);
     rules
 }
+
+#[rustfmt::skip]
+egg::test_fn! { double_neg, ring_rules(), "(neg (neg a))" =>  "a"}
+// (neg (neg a))
+// (neg (* (neg 1) a))
+// (* (neg 1) (* (neg 1) a))
+// (* (* (neg 1) (neg 1)) a) -- assoc
+// (* 1 a) -- neg 1 * neg 1 = 1
+// a

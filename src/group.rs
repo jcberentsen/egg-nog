@@ -39,3 +39,7 @@ pub fn group_mul_rules() -> GasRules {
     rules.extend(extra);
     rules
 }
+
+egg::test_fn! { double_inv, group_mul_rules(), "(inv (inv a))" =>  "a"}
+// inv (inv a))
+// inv ()
