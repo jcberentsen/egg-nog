@@ -12,10 +12,10 @@ use crate::language::GaRules;
 */
 #[rustfmt::skip]
 pub fn monoid_add_rules() -> GaRules {vec![
-    rw!("monoid_add_associative_l"; "(+ ?a (+ ?b ?c)))" => "(+ (+ ?a ?b) ?c))"),
-    rw!("monoid_add_associative_r"; "(+ (+ ?a ?b) ?c))" => "(+ ?a (+ ?b ?c)))" ),
     rw!("monoid_add_unit_l"; "(+ ?a 0)" => "?a" ),
     rw!("monoid_add_unit_r"; "(+ 0 ?a)" => "?a" ),
+    rw!("monoid_add_associative_l"; "(+ ?a (+ ?b ?c)))" => "(+ (+ ?a ?b) ?c))"),
+    rw!("monoid_add_associative_r"; "(+ (+ ?a ?b) ?c))" => "(+ ?a (+ ?b ?c)))" ),
 ]}
 
 /** Monoid(*, 1)

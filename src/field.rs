@@ -14,7 +14,7 @@ pub fn field_rules() -> GaRules {
     let extra = vec![
     rw!("field_mul_commutative"; "(* ?a ?b)" => "(* ?b ?a)" ),
 
-    // rw!("field_multiplicative_inverse"; "(* ?a (inv ?a))" => "1"), // from group_mul_rules
+    rw!("field_multiplicative_inverse"; "(* ?a (inv ?a))" => "1"), // from group_mul_rules
 
     rw!("monoid_unit"; "(* ?a 1)" => "?a"), // sufficient due to commutativity
     rw!("mul_identity"; "(* ?a 0)" => "0"), // sufficient due to commutativity
@@ -23,4 +23,5 @@ pub fn field_rules() -> GaRules {
     rules
 }
 
-egg::test_fn! { field_comm, field_rules(), "(* a (+ 1 b))" =>  "(* (+ 1 b) a)"}
+egg::test_fn! { field_comm, field_rules(), "(* a (+ 1 b))" =>  "(* (+ b 1) a)"}
+egg::test_fn! { field_cancel, field_rules(), "(* a (+ b (neg b)))" =>  "0"}

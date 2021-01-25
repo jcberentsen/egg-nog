@@ -4,6 +4,8 @@
 * DONE Investigate dead_code warnings (why so wrong?)
 * TODO Implement a Language
 * TODO Fix the inv inv test
+** TODO ring can do double neg via *, can inv go via ^ ?
+** TODO Where does inv belong? Group(*,1,inv) or in Field?
 * TODO Add some Analysis
 * TODO Add CostFunction
 * DONE Make lib for real

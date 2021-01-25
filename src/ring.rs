@@ -19,7 +19,7 @@ pub fn ring_rules() -> GaRules {
     rw!("ring_distr-l"; "(* ?a (+ ?b ?c) )" => "(+ (* ?a ?b) (* ?a ?c))"),
     rw!("ring_distr-r"; "(* (+ ?b ?c) ?a )" => "(+ (* ?b ?a) (* ?c ?a))"),
     rw!("ring_negation"; "(neg ?a)" => "(* (neg 1) ?a)"),
-    rw!("ring_neg_square"; "(* (neg 1) (neg 1))" => "1"),
+    rw!("ring_neg_square"; "(* (neg 1) (neg 1))" => "1"), // NOTE squint and this looks like squared magnitude
     ];
     rules.extend(extra);
     rules
