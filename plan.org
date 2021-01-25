@@ -1,9 +1,11 @@
 #+TITLE: Plan
 
 * DONE Move tests to respective modules
+* DONE Investigate dead_code warnings (why so wrong?)
 * TODO Implement a Language
 * TODO Fix the inv inv test
 * TODO Add some Analysis
 * TODO Add CostFunction
-* TODO Make lib for real
-Should get rid of unused functions warnings?
+* DONE Make lib for real
+* TODO Investigate Rust profiling
+* TODO Run Rust tests like ghcid
