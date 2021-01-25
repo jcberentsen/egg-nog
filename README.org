@@ -2,6 +2,7 @@
 
 * Inspiration
 Egg tutorial code https://docs.rs/egg/0.6.0/egg/tutorials/_02_getting_started/index.html
+
 * Geometric Algebra
 ** Core
 Algebra G^n is extension of the inner product space R^n
@@ -18,13 +19,15 @@ Vector inverse: (inv v) =? (* (magnitude v) v)
 **** We may want to separate scalars, vectors, multivectors
 **** We may want some Analysis (even, odd?)
 
-** References
-http://www.faculty.luther.edu/~macdonal/GA&GC.pdf
-
-* SPORES reference
+* References
+** Egg https://arxiv.org/abs/2004.03082
+** SPORES reference
 SPORES: Sum-Product Optimization via Relational Equality Saturation for Large Scale Linear Algebra
 https://arxiv.org/abs/2002.07951
-** Re Refs
-*** T. J. Green, G. Karvounarakis, and V. Tannen. Provenance semirings
+*** Re Refs
+**** T. J. Green, G. Karvounarakis, and V. Tannen. Provenance semirings
 https://www.semanticscholar.org/paper/Provenance-semirings-Green-Karvounarakis/67f5dd72f7d53a2a60857dc57a0ac88f58d04b9b
-*** TOI: Union Of Conjunctive Queries (UCQ)? https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwiV6vj36LTuAhVikIsKHQAxAXsQFjABegQICBAC&url=http%3A%2F%2Fpages.cs.wisc.edu%2F~paris%2Fcs784-s17%2Flectures%2Flecture1.pdf&usg=AOvVaw0XAV3uEM2Air5TQ8AP3_vC
+**** TOI: Union Of Conjunctive Queries (UCQ)? https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwiV6vj36LTuAhVikIsKHQAxAXsQFjABegQICBAC&url=http%3A%2F%2Fpages.cs.wisc.edu%2F~paris%2Fcs784-s17%2Flectures%2Flecture1.pdf&usg=AOvVaw0XAV3uEM2Air5TQ8AP3_vC
+
+** Geometric algegra
+http://www.faculty.luther.edu/~macdonal/GA&GC.pdf
