@@ -19,6 +19,13 @@ Vector inverse: (inv v) =? (* (magnitude v) v)
 **** We may want to separate scalars, vectors, multivectors
 **** We may want some Analysis (even, odd?)
 
+* Get started
+Install the Rust language:
+https://www.rust-lang.org/tools/install
+** Run the tests
+#+begin_src bash
+cargo test
+#+end_src
 * References
 ** egg: Fast and Extensible Equality Saturation
 https://arxiv.org/abs/2004.03082
