@@ -26,4 +26,5 @@ pub fn monoid_mul_rules() -> GaRules {vec![
     rw!("monoid_mul_associative_r"; "(* (* ?a ?b) ?c))" => "(* ?a (* ?b ?c)))" ),
     rw!("monoid_mul_unit_l"; "(* ?a 1)" => "?a" ),
     rw!("monoid_mul_unit_r"; "(* 1 ?a)" => "?a" ),
+    rw!("monoid_double_inverse"; "(inv (inv ?a))" => "?a"), // TODO only when inverse exist?
 ]}

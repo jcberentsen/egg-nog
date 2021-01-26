@@ -2,9 +2,10 @@
 
 * DONE Move tests to respective modules
 * DONE Investigate dead_code warnings (why so wrong?)
-* TODO Implement a Language
+* TODO Implement a Misc language
+** TODO Simple vectors and scalars
 * TODO Fix the inv inv test
-** TODO ring can do double neg via *, can inv go via ^ ?
+** TODO ring can do double neg via mul, can inv go via ^ ?
 ** TODO Where does inv belong? Group(*,1,inv) or in Field?
 * TODO Add some Analysis
 * TODO Add CostFunction
