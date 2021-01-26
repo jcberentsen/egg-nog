@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 egg = "0.6.0"
 env_logger = {version = "0.7", default-features = false}
+ordered-float = "2.0.1"

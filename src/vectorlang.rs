@@ -9,55 +9,68 @@ define_language! {
     /// See: https://docs.rs/egg/0.6.0/egg/macro.define_language.html
     /// Ref https://github.com/uwplse/szalinski/blob/master/src/cad.rs
     pub enum VectorLang {
-        Scalar(i32), // TODO we probably want a more advanced scalar type
-        "+" = Add([Id; 2]),
+        Scalar(Scalar), // TODO we probably want a more advanced scalar type
+        "+" = Add([Id; 2]), // Can we constrain the children to Scalars here
         Symbol(Symbol),
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct TensorShape(u32);
+pub type EGraph = egg::EGraph<VectorLang, ConstantFold>;
+pub type Rewrite = egg::Rewrite<VectorLang, ConstantFold>;
+pub type Lang = VectorLang;
 
-use std::str::FromStr;
+use ordered_float::NotNan;
+pub type Scalar = NotNan<f64>;
 
-// impl<S: AsRef<str>> From<S> for TensorShape {
-//     fn from(s: S) -> Self {
-//         TensorShape(from_str(s))
-//     }
-// }
+/// Meta data for constant tracking
+/// See https://github.com/egraphs-good/egg/blob/master/tests/math.rs
+#[derive(Default)]
+pub struct ConstantFold;
+impl Analysis<Lang> for ConstantFold {
+    type Data = Option<Scalar>;
 
-use std::num::ParseIntError;
+    fn merge(&self, to: &mut Self::Data, from: Self::Data) -> bool {
+        if let (Some(c1), Some(c2)) = (to.as_ref(), from.as_ref()) {
+            assert_eq!(c1, c2);
+        }
+        merge_if_different(to, to.or(from))
+    }
 
-impl FromStr for TensorShape {
-    type Err = ParseIntError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let coords: Vec<&str> = s.trim_matches(|p| p == '[' || p == ']' )
-                                 .split(',')
-                                 .collect();
+    fn make(egraph: &EGraph, enode: &Lang) -> Self::Data {
+        let x = |i: &Id| egraph[*i].data;
+        Some(match enode {
+            Lang::Scalar(c) => *c,
+            Lang::Add([a, b]) => x(a)? + x(b)?,
+            //Math::Sub([a, b]) => x(a)? - x(b)?,
+            //Math::Mul([a, b]) => x(a)? * x(b)?,
+            //Math::Div([a, b]) if x(b) != Some(0.0.into()) => x(a)? / x(b)?,
+            _ => return None,
+        })
+    }
 
-        let n = coords[0].parse::<u32>()?;
-        // let y_fromstr = coords[1].parse::<i32>()?;
-        Ok(TensorShape(n))
+    fn modify(egraph: &mut EGraph, id: Id) {
+        let class = &mut egraph[id];
+        if let Some(c) = class.data {
+            let added = egraph.add(Lang::Scalar(c));
+            let (id, _did_something) = egraph.union(id, added);
+            // to not prune, comment this out
+            // egraph[id].nodes.retain(|n| n.is_leaf());
+
+            assert!(
+                !egraph[id].nodes.is_empty(),
+                "empty eclass! {:#?}",
+                egraph[id]
+            );
+            #[cfg(debug_assertions)]
+            egraph[id].assert_unique_leaves();
+        }
     }
 }
 
-use std::fmt;
-impl fmt::Display for TensorShape {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
-    }
-}
 
-impl fmt::Debug for TensorShape {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-/// Rules for TensorLang
-/// Monoid +
+/// Rules for VectorLang
 #[rustfmt::skip]
-pub fn rules() -> Vec<egg::Rewrite<TensorLang, ()>> {vec![
+pub fn rules() -> Vec<egg::Rewrite<VectorLang, ConstantFold>> {vec![
     rw!("monoid_add_unit_l"; "(+ ?a 0)" => "?a" ),
     rw!("monoid_add_unit_r"; "(+ 0 ?a)" => "?a" ),
     rw!("monoid_add_associative_l"; "(+ ?a (+ ?b ?c)))" => "(+ (+ ?a ?b) ?c))"),
@@ -65,5 +78,10 @@ pub fn rules() -> Vec<egg::Rewrite<TensorLang, ()>> {vec![
 ]}
 
 egg::test_fn! { scalar_parse, rules(), "0" =>  "0"}
-egg::test_fn! { sum_constant_fold, rules(), "(+ 0 1)" =>  "1"}
-egg::test_fn! { vector_parse, rules(), "(Tensor [3] a b c)" =>  "(Tensor [3] a b c)"}
+egg::test_fn! { scalar_parse_pi, rules(), "3.14" =>  "3.14"}
+egg::test_fn! { vector_parse, rules(), "u" =>  "u"}
+egg::test_fn! { sum_constant_fold, rules(), "(+ 1 1)" =>  "2"}
+// Types. Some arrows don't exist
+// scalar + scalar is ok but
+// scalar + vector is only available in GA
+//
